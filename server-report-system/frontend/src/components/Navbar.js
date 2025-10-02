@@ -20,7 +20,6 @@ import {
   UsersIcon as UsersSolid
 } from '@heroicons/react/24/solid';
 import AHRPLogo from './AHRPLogo';
-import notificationService from '../services/notifications';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout, hasPermission, getUserDisplayName, getUserAvatarUrl, getRoleColor } = useAuth();
@@ -28,7 +27,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
 
   // Navigation items based on user role
   const getNavigationItems = () => {
@@ -133,6 +131,7 @@ const Navbar = () => {
                 >
                   Public Stats
                 </Link>
+
                 <Link
                   to="/login"
                   className="btn-discord text-sm"
@@ -153,7 +152,8 @@ const Navbar = () => {
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" />
-                  {notifications.length > 0 && (
+                  {/* TODO: Implement notifications system */}
+                  {false && (
                     <span className="notification-dot"></span>
                   )}
                 </button>
@@ -259,6 +259,7 @@ const Navbar = () => {
                 >
                   Public Stats
                 </Link>
+
                 <Link
                   to="/login"
                   className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300"

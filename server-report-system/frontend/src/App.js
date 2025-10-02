@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
@@ -14,7 +14,6 @@ import ReportDetailPage from './pages/ReportDetailPage';
 import UsersPage from './pages/UsersPage';
 import PublicStatsPage from './pages/PublicStatsPage';
 import NotFoundPage from './pages/NotFoundPage';
-import TestingLogin from './components/TestingLogin';
 import './index.css';
 
 // Create a client for React Query
@@ -43,7 +42,6 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/submit" element={<SubmitReportPage />} />
                   <Route path="/stats" element={<PublicStatsPage />} />
-                  <Route path="/testing-login" element={<TestingLogin />} />
                 
                 {/* Protected routes */}
                 <Route path="/dashboard" element={<DashboardPage />} />
