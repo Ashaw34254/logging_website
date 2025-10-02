@@ -19,6 +19,7 @@ import {
   ChartBarIcon as ChartBarSolid,
   UsersIcon as UsersSolid
 } from '@heroicons/react/24/solid';
+import AHRPLogo from './AHRPLogo';
 import notificationService from '../services/notifications';
 
 const Navbar = () => {
@@ -89,10 +90,7 @@ const Navbar = () => {
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="flex items-center">
-                <div className="h-8 w-8 bg-primary-600 rounded-md flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">AR</span>
-                </div>
-                <span className="ml-2 text-xl font-bold text-gray-900">AHRP Reports</span>
+                <AHRPLogo className="h-8 w-8" showText={true} />
               </Link>
             </div>
 

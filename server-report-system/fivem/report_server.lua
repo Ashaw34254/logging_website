@@ -125,6 +125,12 @@ function IsPlayerStaff(playerId)
     
     -- ACE Permissions (primary method)
     if Config.Permissions.method == "ace" then
+        -- First check direct permission
+        if IsPlayerAceAllowed(playerIdStr, 'ahrp.reports') then
+            return true
+        end
+        
+        -- Then check group permissions
         for _, group in pairs(Config.Permissions.staffGroups) do
             if IsPlayerAceAllowed(playerIdStr, 'group.' .. group) then
                 return true

@@ -7,13 +7,15 @@ version '1.0.0'
 
 -- Client Scripts
 client_scripts {
-    'report_client.lua'
+    'report_client.lua',
+    'debug_report.lua'
 }
 
 -- Server Scripts
 server_scripts {
     'report_server.lua',
-    'test_installation.lua'
+    'test_installation.lua',
+    'debug_permissions.lua'
 }
 
 -- Shared Scripts

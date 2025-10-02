@@ -1,0 +1,29 @@
+# AHRP Report System - Test Configuration
+# Add these lines to your server.cfg file FOR TESTING
+
+# Basic ACE permissions setup for AHRP Reports
+add_ace group.admin ahrp.reports allow
+add_ace group.moderator ahrp.reports allow  
+add_ace group.support ahrp.reports allow
+
+# Alternative - give everyone permission for testing (REMOVE THIS AFTER TESTING!)
+add_ace builtin.everyone ahrp.reports allow
+
+# If you want to test with specific groups, add yourself to a group
+# REPLACE "steam:YOUR_STEAM_ID_HERE" with your actual Steam ID
+# You can find your Steam ID using /debugperms command after adding this resource
+
+# Example - add yourself to admin group (REPLACE WITH YOUR ACTUAL STEAM ID)
+# add_principal identifier.steam:110000100000000 group.admin
+
+# You can also use license identifiers (more reliable)
+# add_principal identifier.license:your_license_here group.admin
+
+# How to find your identifiers:
+# 1. Join your server
+# 2. Use the /debugperms command  
+# 3. Check server console for your identifiers
+# 4. Copy the steam: or license: identifier 
+# 5. Use it in the add_principal command above
+
+# IMPORTANT: Remove the "builtin.everyone" line after testing!

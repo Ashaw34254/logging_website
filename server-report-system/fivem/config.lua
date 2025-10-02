@@ -7,8 +7,8 @@ Config.ReportSystem = {
     apiUrl = "http://localhost:3001/api",
     
     -- API Key for FiveM server authentication
-    -- Generate a secure API key and add it to your backend .env file as FIVEM_API_KEY
-    apiKey = "your_fivem_server_key_here",
+    -- This must match FIVEM_API_KEY in your backend .env file
+    apiKey = "ahrp_fivem_test_key_12345",
     
     -- Enable/disable features
     enableInGameReports = true,

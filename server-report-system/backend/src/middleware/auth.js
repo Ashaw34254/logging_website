@@ -152,7 +152,7 @@ const optionalAuth = (req, res, next) => {
 // API key authentication (for FiveM server integration)
 const requireApiKey = (req, res, next) => {
   const apiKey = req.headers['x-api-key'] || req.query.apiKey;
-  const validApiKey = process.env.FIVEM_SERVER_KEY;
+  const validApiKey = process.env.FIVEM_API_KEY || process.env.FIVEM_SERVER_KEY;
 
   if (!validApiKey) {
     return res.status(500).json({

@@ -86,7 +86,7 @@ function OpenQuickReportDialog(initialText)
             required = true,
             default = initialText or ''
         }
-    ]
+    }
     
     -- This would typically use your server's input system
     -- For this example, we'll trigger a client event to handle the form
@@ -146,7 +146,7 @@ RegisterNUICallback('submitReport', function(data, cb)
     cb('ok')
 end)
 
--- Submit report function
+-- Submit report function (NUI)
 function SubmitReport(reportData)
     -- Validate required fields
     if not reportData.type or not reportData.category or not reportData.description then
@@ -154,8 +154,21 @@ function SubmitReport(reportData)
         return
     end
     
-    if string.len(reportData.description) < 10 then
-        ShowNotification('Description must be at least 10 characters long.', 'error')
+    if string.len(reportData.description) < Config.ReportSystem.minDescriptionLength then
+        ShowNotification('Description must be at least ' .. Config.ReportSystem.minDescriptionLength .. ' characters long.', 'error')
+        return
+    end
+    
+    if string.len(reportData.description) > Config.ReportSystem.maxDescriptionLength then
+        ShowNotification('Description must be less than ' .. Config.ReportSystem.maxDescriptionLength .. ' characters.', 'error')
+        return
+    end
+    
+    -- Check cooldown
+    local currentTime = GetGameTimer()
+    if (currentTime - lastReportTime) < (Config.ReportSystem.cooldownTime * 1000) then
+        local remainingTime = math.ceil((Config.ReportSystem.cooldownTime * 1000 - (currentTime - lastReportTime)) / 1000)
+        ShowNotification('Please wait ' .. remainingTime .. ' seconds before submitting another report.', 'error')
         return
     end
     
@@ -172,8 +185,8 @@ function SubmitReport(reportData)
         metadata = {
             location = playerData.coords,
             vehicle = playerData.vehicle,
-            timestamp = os.date('%Y-%m-%d %H:%M:%S'),
-            server_time = GetCloudTimeAsInt()
+            timestamp = GetCloudTimeAsInt(),
+            game_time = GetGameTimer()
         }
     }
     
@@ -199,6 +212,11 @@ Citizen.CreateThread(function()
             if Config.UI.openKey == "F7" then
                 OpenReportMenu()
             end
+        end
+        
+        -- ESC key to close menu
+        if IsControlJustReleased(0, 322) and isReportMenuOpen then -- ESC key
+            CloseReportMenu()
         end
     end
 end)
@@ -246,7 +264,7 @@ function ShowNotification(message, type)
         -- Default FiveM notification
         SetNotificationTextEntry('STRING')
         AddTextComponentString(message)
-        DrawNotification(0, 1)
+        DrawNotification(false, true)
     end
 end
 
@@ -351,9 +369,112 @@ AddEventHandler('ahrp:staffPermissionResult', function(hasPermission)
     end
 end)
 
+-- Simple report commands (no NUI required)
+RegisterCommand('reportplayer', function(source, args, rawCommand)
+    if #args < 2 then
+        ShowNotification('Usage: /reportplayer [playerID] [reason]', 'error')
+        return
+    end
+    
+    local targetId = args[1]
+    table.remove(args, 1)
+    local reason = table.concat(args, ' ')
+    
+    SubmitSimpleReport('player_report', 'Player Report', reason, targetId)
+end, false)
+
+RegisterCommand('reportbug', function(source, args, rawCommand)
+    if #args < 1 then
+        ShowNotification('Usage: /reportbug [description]', 'error')
+        return
+    end
+    
+    local description = table.concat(args, ' ')
+    SubmitSimpleReport('bug_report', 'Bug Report', description)
+end, false)
+
+RegisterCommand('feedback', function(source, args, rawCommand)
+    if #args < 1 then
+        ShowNotification('Usage: /feedback [message]', 'error')
+        return
+    end
+    
+    local message = table.concat(args, ' ')
+    SubmitSimpleReport('feedback', 'Feedback', message)
+end, false)
+
+RegisterCommand('quickreport', function(source, args, rawCommand)
+    if #args < 2 then
+        ShowNotification('Usage: /quickreport [player/bug/feedback] [description]', 'error')
+        return
+    end
+    
+    local reportType = args[1]:lower()
+    table.remove(args, 1)
+    local description = table.concat(args, ' ')
+    
+    if reportType == 'player' then
+        SubmitSimpleReport('player_report', 'Player Report', description)
+    elseif reportType == 'bug' then
+        SubmitSimpleReport('bug_report', 'Bug Report', description)
+    elseif reportType == 'feedback' then
+        SubmitSimpleReport('feedback', 'Feedback', description)
+    else
+        ShowNotification('Invalid report type. Use: player, bug, or feedback', 'error')
+    end
+end, false)
+
+-- Simple report submission function
+function SubmitSimpleReport(type, category, description, targetPlayerId)
+    -- Check cooldown
+    local currentTime = GetGameTimer()
+    if (currentTime - lastReportTime) < (Config.ReportSystem.cooldownTime * 1000) then
+        local remainingTime = math.ceil((Config.ReportSystem.cooldownTime * 1000 - (currentTime - lastReportTime)) / 1000)
+        ShowNotification('Please wait ' .. remainingTime .. ' seconds before submitting another report.', 'error')
+        return
+    end
+    
+    if string.len(description) < 10 then
+        ShowNotification('Description must be at least 10 characters long.', 'error')
+        return
+    end
+    
+    local reportData = {
+        type = type,
+        category = category,
+        subcategory = category,
+        priority = Config.ReportSystem.defaultPriority,
+        description = description,
+        target_player_id = targetPlayerId,
+        anonymous = false,
+        reporter_player_id = playerData.serverId,
+        metadata = {
+            location = playerData.coords,
+            vehicle = playerData.vehicle,
+            timestamp = GetCloudTimeAsInt(),
+            game_time = GetGameTimer()
+        }
+    }
+    
+    -- Send to server
+    TriggerServerEvent('ahrp:submitReport', reportData)
+    
+    -- Update cooldown
+    lastReportTime = GetGameTimer()
+    
+    -- Close menu if open
+    if isReportMenuOpen then
+        isReportMenuOpen = false
+    end
+    
+    -- Show confirmation
+    ShowNotification('Report submitted successfully! You will be notified of any updates.', 'success')
+end
+
 -- Export functions for other resources
 exports('openReportMenu', OpenReportMenu)
 exports('submitReport', SubmitReport)
+exports('submitSimpleReport', SubmitSimpleReport)
 exports('isReportMenuOpen', function() return isReportMenuOpen end)
 exports('isPlayerStaff', IsPlayerStaff)
 exports('getPlayerData', function() return playerData end)

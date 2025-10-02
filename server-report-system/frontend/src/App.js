@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ReportsPage from './pages/ReportsPage';
@@ -13,6 +14,7 @@ import ReportDetailPage from './pages/ReportDetailPage';
 import UsersPage from './pages/UsersPage';
 import PublicStatsPage from './pages/PublicStatsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import TestingLogin from './components/TestingLogin';
 import './index.css';
 
 // Create a client for React Query
@@ -37,9 +39,11 @@ function App() {
             <main className="flex-1">
               <Routes>
                 {/* Public routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/submit" element={<SubmitReportPage />} />
-                <Route path="/stats" element={<PublicStatsPage />} />
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/submit" element={<SubmitReportPage />} />
+                  <Route path="/stats" element={<PublicStatsPage />} />
+                  <Route path="/testing-login" element={<TestingLogin />} />
                 
                 {/* Protected routes */}
                 <Route path="/dashboard" element={<DashboardPage />} />
@@ -47,9 +51,6 @@ function App() {
                 <Route path="/reports/:id" element={<ReportDetailPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/users" element={<UsersPage />} />
-                
-                {/* Default redirect */}
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 
                 {/* 404 page */}
                 <Route path="*" element={<NotFoundPage />} />
