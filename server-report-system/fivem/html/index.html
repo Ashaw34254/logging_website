@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHRP Report System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app" class="hidden">
+        <!-- Report Menu -->
+        <div id="reportMenu" class="menu-container">
+            <div class="menu-header">
+                <h2><i class="fas fa-flag"></i> Submit Report</h2>
+                <button id="closeBtn" class="close-btn" title="Close Report Menu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="menu-content">
+                <form id="reportForm">
+                    <!-- Report Type Selection -->
+                    <div class="form-group">
+                        <label for="reportType">Report Type <span class="required">*</span></label>
+                        <select id="reportType" name="type" required>
+                            <option value="">Select report type...</option>
+                            <option value="player_report">Player Report</option>
+                            <option value="bug_report">Bug Report</option>
+                            <option value="feedback">Feedback/Suggestion</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Category Selection -->
+                    <div class="form-group">
+                        <label for="category">Category <span class="required">*</span></label>
+                        <select id="category" name="category" required>
+                            <option value="">Select category...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Subcategory Selection -->
+                    <div class="form-group" id="subcategoryGroup">
+                        <label for="subcategory">Subcategory</label>
+                        <select id="subcategory" name="subcategory">
+                            <option value="">Select subcategory...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Priority Selection -->
+                    <div class="form-group">
+                        <label for="priority">Priority</label>
+                        <select id="priority" name="priority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Target Player (for player reports) -->
+                    <div class="form-group" id="targetPlayerGroup">
+                        <label for="targetPlayer">Target Player ID</label>
+                        <input type="number" id="targetPlayer" name="targetPlayerId" placeholder="Enter player server ID">
+                        <small class="form-hint">Leave empty if not reporting a specific player</small>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">Description <span class="required">*</span></label>
+                        <textarea id="description" name="description" rows="5" placeholder="Provide a detailed description of the issue..." required></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span>/1000 characters
+                        </div>
+                    </div>
+                    
+                    <!-- Anonymous Option -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="anonymous" name="anonymous">
+                            <span class="checkmark"></span>
+                            Submit anonymously
+                        </label>
+                        <small class="form-hint">Your identity will be hidden from other players but visible to staff</small>
+                    </div>
+                    
+                    <!-- Player Information Display -->
+                    <div class="player-info">
+                        <h4><i class="fas fa-user"></i> Your Information</h4>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">Server ID:</span>
+                                <span id="playerServerId">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Location:</span>
+                                <span id="playerLocation">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Vehicle:</span>
+                                <span id="playerVehicle">On foot</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" id="cancelBtn" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" id="submitBtn" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Success/Error Messages -->
+        <div id="messageContainer" class="message-container hidden">
+            <div id="messageContent" class="message">
+                <i id="messageIcon" class="fas fa-check-circle"></i>
+                <span id="messageText"></span>
+            </div>
+        </div>
+        
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Submitting report...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
