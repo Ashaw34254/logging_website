@@ -12,7 +12,8 @@ client_scripts {
 
 -- Server Scripts
 server_scripts {
-    'report_server.lua'
+    'report_server.lua',
+    'test_installation.lua'
 }
 
 -- Shared Scripts
@@ -28,7 +29,11 @@ files {
     'html/script.js'
 }
 
--- Dependencies
+-- Dependencies (all optional based on your server setup)
 dependencies {
-    'es_extended'  -- Optional: ESX framework support
+   -- 'es_extended',  -- Uncomment if using ESX framework
+   -- 'qb-core',      -- Uncomment if using QBCore framework
+   -- 'mythic_notify', -- Uncomment if using Mythic Notify
+   -- 'pnotify',       -- Uncomment if using pNotify
+   -- 'okokNotify'     -- Uncomment if using okokNotify
 }

@@ -3,22 +3,30 @@ Config = {}
 
 -- Report System Settings
 Config.ReportSystem = {
-    -- Backend API URL
+    -- Backend API URL (change this to match your backend server)
     apiUrl = "http://localhost:3001/api",
     
     -- API Key for FiveM server authentication
+    -- Generate a secure API key and add it to your backend .env file as FIVEM_API_KEY
     apiKey = "your_fivem_server_key_here",
     
     -- Enable/disable features
     enableInGameReports = true,
     enableAnonymousReports = true,
     enableFileUploads = false, -- Screenshots can be uploaded via web interface
+    enableStaffNotifications = true, -- In-game notifications for staff
+    enableAutoAssignment = true, -- Automatically assign reports to available staff
     
     -- Rate limiting
     cooldownTime = 300, -- 5 minutes between reports per player
+    maxReportsPerHour = 5, -- Maximum reports per player per hour
     
     -- Default settings
     defaultPriority = "medium",
+    
+    -- Report validation
+    minDescriptionLength = 10,
+    maxDescriptionLength = 2000,
     
     -- Report categories and subcategories
     categories = {
@@ -64,10 +72,11 @@ Config.ReportSystem = {
     }
 }
 
--- ESX Settings (if using ESX framework)
-Config.ESX = {
-    enabled = false, -- Set to true if using ESX
-    getSharedObject = "esx:getSharedObject"
+-- Framework Settings
+Config.Framework = {
+    type = "standalone", -- Options: "standalone", "esx", "qbcore", "custom"
+    esxSharedObject = "esx:getSharedObject", -- Only used if type = "esx"
+    qbcoreExport = "qb-core" -- Only used if type = "qbcore"
 }
 
 -- Notification Settings
@@ -79,12 +88,28 @@ Config.Notifications = {
 
 -- Permission Settings
 Config.Permissions = {
-    -- Staff groups that can receive report notifications in-game
+    -- Staff identification method
+    method = "ace", -- Options: "ace", "discord", "steam", "license", "custom"
+    
+    -- Staff groups/roles for ACE permissions
     staffGroups = {
         "admin",
         "moderator", 
         "support",
         "owner"
+    },
+    
+    -- Staff Discord role IDs (if using discord method)
+    discordStaffRoles = {
+        "123456789012345678", -- Admin role ID
+        "123456789012345679", -- Moderator role ID
+        "123456789012345680"  -- Support role ID
+    },
+    
+    -- Staff Steam/License IDs (if using steam/license method)
+    staffIdentifiers = {
+        -- "steam:110000100000000",
+        -- "license:abc123def456"
     },
     
     -- Commands and their required permissions

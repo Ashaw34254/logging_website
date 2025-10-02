@@ -1,24 +1,24 @@
 # AHRP Report System - FiveM Integration
 
-This FiveM resource provides in-game reporting functionality for the AHRP Report System. Players can submit reports directly from within the game, and staff members receive real-time notifications.
+A comprehensive FiveM resource for integrating with the AHRP web-based reporting system. **Framework Agnostic** - works with any server setup!
 
-## Features
+## ✨ Features
 
-### Player Features
-- **In-game report submission** with intuitive NUI interface
+### 🎮 Player Features
+- **In-game report submission** with intuitive interface
 - **Multiple report types**: Player reports, bug reports, feedback
 - **Categorized reporting** system with subcategories
 - **Anonymous reporting** option
 - **Real-time status updates** on submitted reports
-- **Cooldown system** to prevent spam
-- **Location tracking** for context
+- **Smart cooldown system** to prevent spam
+- **Automatic location tracking** for context
 
-### Staff Features
+### 👮 Staff Features
 - **Real-time notifications** for new reports
 - **In-game report management** commands
 - **Staff-only quick report** functionality
 - **Report status updates** from in-game
-- **Integration with permission systems** (ESX, ACE, QBCore)
+- **Flexible permission systems** (ACE, Discord, Steam, License)
 
 ### Technical Features
 - **REST API integration** with web backend
@@ -60,33 +60,44 @@ This FiveM resource provides in-game reporting functionality for the AHRP Report
 
 ## Configuration
 
-### Basic Configuration (`config.lua`)
+### Framework Configuration (`config.lua`)
 
 ```lua
-Config = {
-    -- Report System Settings
-    ReportSystem = {
-        enableInGameReports = true,
-        apiUrl = "http://localhost:3000/api",
-        apiKey = "your-api-key-here",
-        cooldownTime = 60, -- seconds
-        defaultPriority = "medium"
-    },
+-- Framework Settings (NEW - Framework Agnostic!)
+Config.Framework = {
+    type = "standalone", -- Options: "standalone", "esx", "qbcore"
+    esxSharedObject = "esx:getSharedObject", -- Only if using ESX
+    qbcoreExport = "qb-core" -- Only if using QBCore
+}
 
-    -- ESX Integration
-    ESX = {
-        enabled = true,
-        getSharedObject = "esx:getSharedObject"
-    },
+-- Report System Settings
+Config.ReportSystem = {
+    enableInGameReports = true,
+    apiUrl = "http://localhost:3001/api", -- Updated port
+    apiKey = "your_fivem_server_key_here",
+    cooldownTime = 300, -- 5 minutes between reports
+    defaultPriority = "medium",
+    enableStaffNotifications = true,
+    enableAutoAssignment = true
+}
 
-    -- Permissions
-    Permissions = {
-        staffGroups = {"admin", "moderator", "support"},
-        commands = {
-            report = "user",
-            reports = "staff",
-            reportadmin = "admin"
-        }
+-- Permission System (IMPROVED - Multiple Methods!)
+Config.Permissions = {
+    method = "ace", -- Options: "ace", "discord", "steam", "license"
+    
+    -- ACE Permission Groups
+    staffGroups = {"admin", "moderator", "support"},
+    
+    -- Discord Role IDs (if using discord method)
+    discordStaffRoles = {
+        "123456789012345678", -- Admin role
+        "123456789012345679"  -- Moderator role
+    },
+    
+    -- Steam/License IDs (if using identifier method)
+    staffIdentifiers = {
+        -- "steam:110000100000000",
+        -- "license:abc123def456"
     }
 }
 ```

@@ -199,6 +199,31 @@ class AnalyticsController {
     }
   }
 
+  // Get real-time analytics data
+  static async getRealTimeAnalytics(req, res) {
+    try {
+      // Mock real-time data - replace with actual queries
+      const realTimeData = {
+        activeUsers: Math.floor(Math.random() * 50) + 10,
+        pendingReports: Math.floor(Math.random() * 20) + 5,
+        avgResponseTime: Number((Math.random() * 5 + 1).toFixed(1)), // hours
+        onlineStaff: Math.floor(Math.random() * 8) + 2,
+        lastUpdated: new Date()
+      };
+
+      res.json({
+        success: true,
+        data: realTimeData
+      });
+    } catch (error) {
+      console.error('Get real-time analytics error:', error);
+      res.status(500).json({
+        error: 'Failed to fetch real-time analytics',
+        message: error.message
+      });
+    }
+  }
+
   // Get public statistics (anonymized)
   static async getPublicStats(req, res) {
     try {

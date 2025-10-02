@@ -264,42 +264,96 @@ AddEventHandler('ahrp:staffNotification', function(data)
     end
 end)
 
--- Check if player is staff (implement based on your permission system)
+-- Check if player is staff (framework-agnostic)
 function IsPlayerStaff()
-    -- This should integrate with your server's permission system
-    -- Examples:
+    local playerId = PlayerId()
     
-    -- ESX Example:
-    if Config.ESX.enabled then
-        local ESX = exports[Config.ESX.getSharedObject]:getSharedObject()
-        local playerData = ESX.GetPlayerData()
-        if playerData.job and playerData.job.name then
-            for _, group in pairs(Config.Permissions.staffGroups) do
-                if playerData.job.name == group then
-                    return true
+    -- ACE Permissions (default method)
+    if Config.Permissions.method == "ace" then
+        for _, group in pairs(Config.Permissions.staffGroups) do
+            if IsPlayerAceAllowed(tostring(GetPlayerServerId(playerId)), 'group.' .. group) then
+                return true
+            end
+        end
+    end
+    
+    -- Discord role-based permissions
+    if Config.Permissions.method == "discord" then
+        local discordId = GetDiscordId()
+        if discordId then
+            -- This would require a server callback to check Discord roles
+            -- For now, we'll use a server event to check
+            TriggerServerEvent('ahrp:checkStaffPermission', 'discord', discordId)
+            return false -- Will be updated via callback
+        end
+    end
+    
+    -- Steam/License identifier based permissions
+    if Config.Permissions.method == "steam" or Config.Permissions.method == "license" then
+        local identifiers = GetPlayerIdentifiers(PlayerId())
+        for _, id in pairs(identifiers) do
+            if string.match(id, Config.Permissions.method .. ':') then
+                for _, staffId in pairs(Config.Permissions.staffIdentifiers) do
+                    if id == staffId then
+                        return true
+                    end
                 end
             end
         end
     end
     
-    -- ACE Permissions Example:
-    for _, group in pairs(Config.Permissions.staffGroups) do
-        if IsPlayerAceAllowed(PlayerId(), 'group.' .. group) then
-            return true
+    -- Framework-specific checks
+    if Config.Framework.type == "esx" then
+        local ESX = exports[Config.Framework.esxSharedObject]:getSharedObject()
+        if ESX then
+            local playerData = ESX.GetPlayerData()
+            if playerData.job and playerData.job.name then
+                for _, group in pairs(Config.Permissions.staffGroups) do
+                    if playerData.job.name == group then
+                        return true
+                    end
+                end
+            end
+        end
+    elseif Config.Framework.type == "qbcore" then
+        local QBCore = exports[Config.Framework.qbcoreExport]:GetCoreObject()
+        if QBCore then
+            local PlayerData = QBCore.Functions.GetPlayerData()
+            if PlayerData.job and (PlayerData.job.type == 'leo' or PlayerData.job.name == 'admin' or PlayerData.job.name == 'moderator') then
+                return true
+            end
         end
     end
     
-    -- QBCore Example (uncomment if using QBCore):
-    -- local QBCore = exports['qb-core']:GetCoreObject()
-    -- local PlayerData = QBCore.Functions.GetPlayerData()
-    -- if PlayerData.job.type == 'leo' or PlayerData.job.name == 'admin' then
-    --     return true
-    -- end
-    
     return false
 end
+
+-- Helper function to get Discord ID
+function GetDiscordId()
+    local identifiers = GetPlayerIdentifiers(PlayerId())
+    for _, id in pairs(identifiers) do
+        if string.match(id, 'discord:') then
+            return string.gsub(id, 'discord:', '')
+        end
+    end
+    return nil
+end
+
+-- Additional event handlers for staff permission callbacks
+RegisterNetEvent('ahrp:staffPermissionResult')
+AddEventHandler('ahrp:staffPermissionResult', function(hasPermission)
+    -- This could be used to update UI elements based on staff status
+    if hasPermission then
+        -- Player has staff permissions
+        playerData.isStaff = true
+    else
+        playerData.isStaff = false
+    end
+end)
 
 -- Export functions for other resources
 exports('openReportMenu', OpenReportMenu)
 exports('submitReport', SubmitReport)
 exports('isReportMenuOpen', function() return isReportMenuOpen end)
+exports('isPlayerStaff', IsPlayerStaff)
+exports('getPlayerData', function() return playerData end)

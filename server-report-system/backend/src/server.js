@@ -18,6 +18,7 @@ const analyticsRoutes = require('./routes/analytics');
 // Import config
 const { securityHeaders } = require('./config/security');
 const webhookService = require('./config/webhook');
+const discordBot = require('./services/DiscordBot');
 
 // Import models for automation
 const Report = require('./models/Report');
@@ -257,7 +258,7 @@ function setupAutomatedTasks() {
 // Start server
 const PORT = process.env.PORT || 3001;
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🚀 AHRP Report System Backend running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
@@ -265,6 +266,18 @@ server.listen(PORT, () => {
   // Setup automated tasks
   setupAutomatedTasks();
   console.log('⏰ Automated tasks scheduled');
+  
+  // Initialize Discord bot
+  try {
+    const botInitialized = await discordBot.initialize();
+    if (botInitialized) {
+      console.log('🤖 Discord bot initialized successfully');
+    } else {
+      console.log('⚠️  Discord bot not configured (missing token)');
+    }
+  } catch (error) {
+    console.error('❌ Failed to initialize Discord bot:', error.message);
+  }
   
   // Log available routes
   console.log('\n📍 Available routes:');
@@ -278,8 +291,16 @@ server.listen(PORT, () => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
+  
+  // Shutdown Discord bot
+  try {
+    await discordBot.shutdown();
+  } catch (error) {
+    console.error('Error shutting down Discord bot:', error);
+  }
+  
   server.close(() => {
     console.log('Server closed');
     process.exit(0);

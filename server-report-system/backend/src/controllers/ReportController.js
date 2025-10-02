@@ -1,6 +1,7 @@
 const Report = require('../models/Report');
 const User = require('../models/User');
 const webhookService = require('../config/webhook');
+const discordBot = require('../services/DiscordBot');
 const path = require('path');
 const fs = require('fs');
 
@@ -59,6 +60,15 @@ class ReportController {
         await webhookService.sendReportNotification(completeReport, reportType);
       } catch (webhookError) {
         console.error('Webhook notification failed:', webhookError);
+      }
+
+      // Send Discord notification
+      try {
+        if (discordBot.isConnected()) {
+          await discordBot.sendReportNotification(completeReport);
+        }
+      } catch (discordError) {
+        console.error('Discord notification failed:', discordError);
       }
 
       // Auto-assign report if possible

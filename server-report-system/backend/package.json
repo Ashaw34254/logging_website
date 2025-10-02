@@ -11,11 +11,14 @@
     "seed": "knex seed:run"
   },
   "dependencies": {
+    "@discordjs/rest": "^2.6.0",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "csv-writer": "^1.6.0",
+    "discord-api-types": "^0.38.26",
+    "discord.js": "^14.22.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^6.10.0",
@@ -34,7 +37,7 @@
     "passport-discord": "^0.1.4",
     "pdfkit": "^0.17.2",
     "socket.io": "^4.7.2",
-    "winston": "^3.10.0"
+    "winston": "^3.18.3"
   },
   "devDependencies": {
     "jest": "^29.6.4",

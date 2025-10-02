@@ -26,6 +26,13 @@ router.get('/dashboard',
   AnalyticsController.getDashboardAnalytics
 );
 
+// Get real-time analytics data
+router.get('/realtime',
+  requireAuth,
+  requireRole('support'),
+  AnalyticsController.getRealTimeAnalytics
+);
+
 // Get comprehensive report statistics
 router.get('/reports',
   requireAuth,

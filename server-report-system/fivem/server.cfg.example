@@ -1,0 +1,61 @@
+# AHRP Report System - Server Configuration Example
+# Add these lines to your server.cfg file
+
+# ================================
+# AHRP REPORT SYSTEM CONFIGURATION
+# ================================
+
+# Ensure the resource starts
+ensure ahrp-reports
+
+# ACE Permissions for Staff Groups
+# (Only needed if using Config.Permissions.method = "ace")
+
+# Admin Group
+add_ace group.admin ahrp.reports allow
+add_ace group.admin command.reports allow
+add_ace group.admin command.reportadmin allow
+
+# Moderator Group  
+add_ace group.moderator ahrp.reports allow
+add_ace group.moderator command.reports allow
+add_ace group.moderator command.reportadmin allow
+
+# Support Group
+add_ace group.support ahrp.reports allow
+add_ace group.support command.reports allow
+
+# Add your staff members to groups
+# Replace the identifiers with your actual staff identifiers
+
+# Example Admin assignments
+# add_principal identifier.steam:110000100000000 group.admin
+# add_principal identifier.discord:123456789012345678 group.admin
+# add_principal identifier.license:abc123def456ghi789 group.admin
+
+# Example Moderator assignments
+# add_principal identifier.steam:110000100000001 group.moderator
+# add_principal identifier.discord:123456789012345679 group.moderator
+
+# Example Support assignments
+# add_principal identifier.steam:110000100000002 group.support
+# add_principal identifier.discord:123456789012345680 group.support
+
+# ================================
+# OPTIONAL: Debug Mode
+# ================================
+# Uncomment to enable debug logging
+# set ahrp_debug true
+
+# ================================
+# NOTES:
+# ================================
+# 1. Replace example identifiers with real ones from your staff
+# 2. You can find player identifiers using: /showids command (if available)
+# 3. Steam IDs: Use the format "identifier.steam:110000xxxxxxxxx"
+# 4. Discord IDs: Use the format "identifier.discord:123456789012345678"
+# 5. License IDs: Use the format "identifier.license:xxxxxxxxxxxxxxxxxx"
+# 6. Restart your server after making changes to server.cfg
+
+# To find identifiers, you can use this command in your server console:
+# Use: /showidentifiers [player_id] or check server logs when players connect

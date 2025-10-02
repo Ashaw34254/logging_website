@@ -1,14 +1,20 @@
 -- AHRP Report System - Server Side
 local reportCooldowns = {}
-local ESX = nil
+local Framework = {}
 
--- Initialize ESX if enabled
+-- Initialize Framework if needed
 Citizen.CreateThread(function()
-    if Config.ESX.enabled then
-        while ESX == nil do
-            TriggerEvent(Config.ESX.getSharedObject, function(obj) ESX = obj end)
+    if Config.Framework.type == "esx" then
+        while Framework.ESX == nil do
+            TriggerEvent(Config.Framework.esxSharedObject, function(obj) Framework.ESX = obj end)
             Citizen.Wait(0)
         end
+        print('[AHRP Reports] ESX Framework initialized')
+    elseif Config.Framework.type == "qbcore" then
+        Framework.QBCore = exports[Config.Framework.qbcoreExport]:GetCoreObject()
+        print('[AHRP Reports] QBCore Framework initialized')
+    else
+        print('[AHRP Reports] Running in standalone mode')
     end
 end)
 
@@ -113,11 +119,46 @@ function NotifyStaff(reportData)
     end
 end
 
--- Check if player is staff
+-- Check if player is staff (framework-agnostic)
 function IsPlayerStaff(playerId)
-    -- ESX Integration
-    if Config.ESX.enabled and ESX then
-        local xPlayer = ESX.GetPlayerFromId(playerId)
+    local playerIdStr = tostring(playerId)
+    
+    -- ACE Permissions (primary method)
+    if Config.Permissions.method == "ace" then
+        for _, group in pairs(Config.Permissions.staffGroups) do
+            if IsPlayerAceAllowed(playerIdStr, 'group.' .. group) then
+                return true
+            end
+        end
+    end
+    
+    -- Discord role-based permissions
+    if Config.Permissions.method == "discord" then
+        local discordId = GetPlayerDiscordId(playerId)
+        if discordId then
+            -- This would require Discord API integration
+            -- For now, return false and implement as needed
+            return CheckDiscordRole(discordId)
+        end
+    end
+    
+    -- Identifier-based permissions (Steam/License)
+    if Config.Permissions.method == "steam" or Config.Permissions.method == "license" then
+        local identifiers = GetPlayerIdentifiers(playerId)
+        for _, id in pairs(identifiers) do
+            if string.match(id, Config.Permissions.method .. ':') then
+                for _, staffId in pairs(Config.Permissions.staffIdentifiers) do
+                    if id == staffId then
+                        return true
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Framework-specific checks
+    if Config.Framework.type == "esx" and Framework.ESX then
+        local xPlayer = Framework.ESX.GetPlayerFromId(playerId)
         if xPlayer then
             local group = xPlayer.getGroup()
             for _, staffGroup in pairs(Config.Permissions.staffGroups) do
@@ -126,25 +167,40 @@ function IsPlayerStaff(playerId)
                 end
             end
         end
-    end
-    
-    -- ACE Permissions
-    for _, group in pairs(Config.Permissions.staffGroups) do
-        if IsPlayerAceAllowed(playerId, 'group.' .. group) then
-            return true
+    elseif Config.Framework.type == "qbcore" and Framework.QBCore then
+        local Player = Framework.QBCore.Functions.GetPlayer(playerId)
+        if Player then
+            local job = Player.PlayerData.job
+            if job and (job.type == 'leo' or job.name == 'admin' or job.name == 'moderator') then
+                return true
+            end
         end
     end
     
-    -- QBCore Integration (uncomment if using QBCore)
-    -- local QBCore = exports['qb-core']:GetCoreObject()
-    -- local Player = QBCore.Functions.GetPlayer(playerId)
-    -- if Player then
-    --     local job = Player.PlayerData.job
-    --     if job and (job.type == 'leo' or job.name == 'admin' or job.name == 'moderator') then
-    --         return true
-    --     end
-    -- end
-    
+    return false
+end
+
+-- Helper function to get Discord ID
+function GetPlayerDiscordId(playerId)
+    local identifiers = GetPlayerIdentifiers(playerId)
+    for _, id in pairs(identifiers) do
+        if string.match(id, 'discord:') then
+            return string.gsub(id, 'discord:', '')
+        end
+    end
+    return nil
+end
+
+-- Helper function to check Discord role (placeholder)
+function CheckDiscordRole(discordId)
+    -- This would require Discord API integration
+    -- For now, just check if the Discord ID is in our staff list
+    for _, roleId in pairs(Config.Permissions.discordStaffRoles) do
+        -- This is a placeholder - you'd need to implement actual Discord API checking
+        if discordId == roleId then
+            return true
+        end
+    end
     return false
 end
 
@@ -360,16 +416,33 @@ function SendDiscordWebhook(reportData)
     }), { ['Content-Type'] = 'application/json' })
 end
 
--- API health check
+-- API health check and initialization
 Citizen.CreateThread(function()
     Citizen.Wait(10000) -- Wait 10 seconds after resource start
     
+    print('[AHRP Reports] Initializing Report System...')
+    print('[AHRP Reports] Framework: ' .. Config.Framework.type)
+    print('[AHRP Reports] Permission Method: ' .. Config.Permissions.method)
+    print('[AHRP Reports] API URL: ' .. Config.ReportSystem.apiUrl)
+    
     PerformHttpRequest(Config.ReportSystem.apiUrl .. '/health', function(errorCode, resultData, resultHeaders)
         if errorCode == 200 then
-            print('[AHRP Reports] Successfully connected to API server')
+            print('[AHRP Reports] ✅ Successfully connected to API server')
+            
+            -- Test authentication
+            PerformHttpRequest(Config.ReportSystem.apiUrl .. '/auth/test', function(authCode, authData, authHeaders)
+                if authCode == 200 then
+                    print('[AHRP Reports] ✅ API authentication working')
+                else
+                    print('[AHRP Reports] ⚠️  API authentication failed. Please check your API key.')
+                end
+            end, 'GET', '', {
+                ['x-api-key'] = Config.ReportSystem.apiKey
+            })
         else
-            print('[AHRP Reports] WARNING: Cannot connect to API server. Error code: ' .. errorCode)
+            print('[AHRP Reports] ❌ Cannot connect to API server. Error code: ' .. errorCode)
             print('[AHRP Reports] Please check your API configuration in config.lua')
+            print('[AHRP Reports] Make sure the backend server is running on: ' .. Config.ReportSystem.apiUrl)
         end
     end, 'GET')
 end)
@@ -394,9 +467,28 @@ AddEventHandler('playerDropped', function(reason)
     reportCooldowns[source] = nil
 end)
 
+-- Handle staff permission checking from client
+RegisterServerEvent('ahrp:checkStaffPermission')
+AddEventHandler('ahrp:checkStaffPermission', function(method, identifier)
+    local source = source
+    local hasPermission = false
+    
+    if method == 'discord' then
+        hasPermission = CheckDiscordRole(identifier)
+    elseif method == 'general' then
+        hasPermission = IsPlayerStaff(source)
+    end
+    
+    TriggerClientEvent('ahrp:staffPermissionResult', source, hasPermission)
+end)
+
 -- Export functions
 exports('isPlayerStaff', IsPlayerStaff)
+exports('getPlayerDiscordId', GetPlayerDiscordId)
 exports('submitReportFromScript', function(playerId, reportData)
     -- Allow other resources to submit reports
     TriggerEvent('ahrp:submitReport', reportData)
+end)
+exports('checkStaffPermission', function(playerId)
+    return IsPlayerStaff(playerId)
 end)
