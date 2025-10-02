@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHRP Report System - Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .testing { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .button-container { margin-top: 20px; }
+        .links-container { margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 AHRP Report System - Connection Test</h1>
+    
+    <div id="frontend-status" class="status testing">
+        ⏳ Testing Frontend Connection...
+    </div>
+    
+    <div id="backend-status" class="status testing">
+        ⏳ Testing Backend API Connection...
+    </div>
+    
+    <div class="button-container">
+        <button onclick="testConnections()">🔄 Retry Tests</button>
+        <button onclick="window.open('http://localhost:3000', '_blank')">🌐 Open Frontend</button>
+        <button onclick="window.open('http://localhost:3001/api/health', '_blank')">🔗 Open Backend API</button>
+    </div>
+    
+    <div class="links-container">
+        <h2>Manual URLs to try:</h2>
+        <ul>
+            <li><strong>Frontend:</strong> <a href="http://localhost:3000" target="_blank" rel="noopener">http://localhost:3000</a></li>
+            <li><strong>Backend API:</strong> <a href="http://localhost:3001/api/health" target="_blank" rel="noopener">http://localhost:3001/api/health</a></li>
+            <li><strong>Alternative Frontend:</strong> <a href="http://127.0.0.1:3000" target="_blank" rel="noopener">http://127.0.0.1:3000</a></li>
+            <li><strong>Alternative Backend:</strong> <a href="http://127.0.0.1:3001/api/health" target="_blank" rel="noopener">http://127.0.0.1:3001/api/health</a></li>
+        </ul>
+    </div>
+
+    <script>
+        async function testConnections() {
+            const frontendStatus = document.getElementById('frontend-status');
+            const backendStatus = document.getElementById('backend-status');
+            
+            // Test Frontend
+            frontendStatus.className = 'status testing';
+            frontendStatus.textContent = '⏳ Testing Frontend Connection...';
+            
+            try {
+                const frontendResponse = await fetch('http://localhost:3000');
+                if (frontendResponse.ok) {
+                    frontendStatus.className = 'status success';
+                    frontendStatus.textContent = '✅ Frontend is running successfully on port 3000!';
+                } else {
+                    throw new Error(`HTTP ${frontendResponse.status}`);
+                }
+            } catch (error) {
+                frontendStatus.className = 'status error';
+                frontendStatus.textContent = `❌ Frontend connection failed: ${error.message}`;
+            }
+            
+            // Test Backend
+            backendStatus.className = 'status testing';
+            backendStatus.textContent = '⏳ Testing Backend API Connection...';
+            
+            try {
+                const backendResponse = await fetch('http://localhost:3001/api/health');
+                if (backendResponse.ok) {
+                    const data = await backendResponse.json();
+                    backendStatus.className = 'status success';
+                    backendStatus.textContent = `✅ Backend API is running successfully! Status: ${data.status}, Version: ${data.version}`;
+                } else {
+                    throw new Error(`HTTP ${backendResponse.status}`);
+                }
+            } catch (error) {
+                backendStatus.className = 'status error';
+                backendStatus.textContent = `❌ Backend API connection failed: ${error.message}`;
+            }
+        }
+        
+        // Test connections when page loads
+        window.onload = testConnections;
+    </script>
+</body>
+</html>
